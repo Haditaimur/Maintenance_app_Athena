@@ -10,84 +10,51 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #fafbff;
-            --bg-secondary: #ffffff;
-            --bg-card: #ffffff;
-            --accent-urgent: #ff6b6b;
-            --accent-todo: #ffd93d;
-            --accent-done: #6bcf7f;
-            --accent-other: #a29bfe;
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-urgent: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            --gradient-todo: linear-gradient(135deg, #ffd93d 0%, #ffb347 100%);
-            --gradient-done: linear-gradient(135deg, #6bcf7f 0%, #4ecca3 100%);
-            --gradient-other: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
-            --text-primary: #2d3436;
-            --text-secondary: #636e72;
-            --border-color: #e1e8ed;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-            --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.16);
+            --primary: #667eea;
+            --urgent: #ff6b6b;
+            --todo: #ffd93d;
+            --done: #6bcf7f;
+            --other: #a29bfe;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --border: #e1e8ed;
+            --bg: #fafbff;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        #root {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
         }
 
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
-            background: var(--bg-primary);
-            position: relative;
-        }
+        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
         /* Header */
         .app-header {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, var(--primary), #764ba2);
             padding: 1.75rem 1.5rem;
             border-radius: 0 0 24px 24px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
         }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .header-right { display: flex; align-items: center; gap: 0.75rem; }
+        
         .app-title {
             font-size: 1.75rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
             color: white;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+        .app-title:hover { transform: scale(0.98); }
+        .app-title:active { transform: scale(0.96); }
 
         .role-badge {
             padding: 0.5rem 0.875rem;
@@ -95,166 +62,115 @@
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
             color: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+        .role-badge.manager { background: white; color: var(--primary); border: none; }
 
-        .role-badge.manager {
-            background: rgba(255, 255, 255, 0.95);
-            color: #667eea;
-            border: none;
-            font-weight: 700;
-        }
-
-        .logout-button {
-            padding: 0.5rem 0.875rem;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: inherit;
-        }
-
-        .logout-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .back-button {
+        .back-button, .logout-button, .user-menu-button {
             padding: 0.625rem 1.125rem;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 20px;
             color: white;
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
             font-family: inherit;
         }
-
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .back-button:hover, .logout-button:hover, .user-menu-button:hover { 
+            background: rgba(255,255,255,0.3); 
+            transform: scale(0.98);
         }
+        .back-button:active, .logout-button:active, .user-menu-button:active { transform: scale(0.96); }
 
-        /* Role Selector */
-        .role-selector {
-            padding: 0 1.5rem 3rem;
-            text-align: center;
+        .user-menu-button { display: flex; align-items: center; gap: 0.5rem; }
+
+        /* Dropdown */
+        .user-menu-container { position: relative; }
+        .user-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            min-width: 200px;
+            overflow: hidden;
+            z-index: 1000;
         }
+        .user-menu-item {
+            padding: 0.875rem 1.25rem;
+            color: var(--text);
+            background: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .user-menu-item:last-child { border-bottom: none; }
+        .user-menu-item:hover { background: var(--bg); color: var(--primary); }
+        .user-menu-item.danger { color: var(--urgent); }
 
-        .role-selector h2 {
-            font-size: 2rem;
-            margin-bottom: 0.75rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
+        /* Branding */
+        .app-branding { text-align: center; padding: 3rem 1.5rem 2rem; }
+        .app-logo { font-size: 4rem; margin-bottom: 1rem; }
+        .app-name {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 0.5rem;
         }
+        .app-tagline { color: var(--text-light); margin-bottom: 2.5rem; }
 
-        .role-selector p {
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            font-size: 1.05rem;
-        }
-
-        .role-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
+        /* Role Selector */
+        .role-selector { padding: 0 1.5rem 3rem; text-align: center; }
+        .role-selector h2 { font-size: 2rem; margin-bottom: 0.75rem; font-weight: 700; }
+        .role-selector p { color: var(--text-light); margin-bottom: 2.5rem; }
+        .role-buttons { display: flex; flex-direction: column; gap: 1rem; }
+        
         .role-select-btn {
             padding: 1.75rem;
             background: white;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--border);
             border-radius: 20px;
-            color: var(--text-primary);
             font-size: 1.125rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             font-family: inherit;
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-
-        .role-select-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .role-select-btn:hover {
-            transform: scale(0.98);
-            border-color: transparent;
-            box-shadow: var(--shadow-md);
-            color: white;
-        }
-
-        .role-select-btn:hover::before {
-            opacity: 1;
-        }
-
-        .role-select-btn:active {
-            transform: scale(0.96);
-        }
-
-        .role-select-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .role-select-btn.manager {
-            background: var(--gradient-primary);
-            border: none;
-            color: white;
-        }
+        .role-select-btn:hover { transform: scale(0.98); border-color: var(--primary); }
+        .role-select-btn:active { transform: scale(0.96); }
+        .role-select-btn.manager { background: linear-gradient(135deg, var(--primary), #764ba2); color: white; border: none; }
 
         /* Dashboard */
-        .dashboard {
-            padding: 2rem 1.5rem;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
+        .dashboard { padding: 2rem 1.5rem; }
+        .dashboard-grid { display: grid; gap: 1.25rem; }
 
         .category-card {
             background: white;
-            border: none;
             border-radius: 24px;
             padding: 1.75rem;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            outline: none;
             position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
         }
-
         .category-card::before {
             content: '';
             position: absolute;
@@ -262,122 +178,30 @@
             left: 0;
             width: 6px;
             height: 100%;
-            transition: width 0.3s ease;
         }
+        .category-card.urgent::before { background: var(--urgent); }
+        .category-card.todo::before { background: var(--todo); }
+        .category-card.done::before { background: var(--done); }
+        .category-card.other::before { background: var(--other); }
+        
+        .category-card:hover { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .category-card:active { transform: scale(0.96); }
 
-        .category-card.urgent::before {
-            background: var(--gradient-urgent);
-        }
+        .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .category-title { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.625rem; }
+        .category-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.375rem; }
+        .category-card.urgent .category-icon { background: rgba(255,107,107,0.15); }
+        .category-card.todo .category-icon { background: rgba(255,217,61,0.15); }
+        .category-card.done .category-icon { background: rgba(107,207,127,0.15); }
+        .category-card.other .category-icon { background: rgba(162,155,254,0.15); }
 
-        .category-card.todo::before {
-            background: var(--gradient-todo);
-        }
+        .category-count { font-size: 2.5rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .category-card.urgent .category-count { color: var(--urgent); }
+        .category-card.todo .category-count { color: var(--todo); }
+        .category-card.done .category-count { color: var(--done); }
+        .category-card.other .category-count { color: var(--other); }
+        .category-subtitle { color: var(--text-light); font-size: 0.875rem; margin-top: 0.5rem; }
 
-        .category-card.done::before {
-            background: var(--gradient-done);
-        }
-
-        .category-card.other::before {
-            background: var(--gradient-other);
-        }
-
-        .category-card:hover {
-            transform: scale(0.98);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .category-card:hover::before {
-            width: 100%;
-            opacity: 0.08;
-        }
-
-        .category-card:active {
-            transform: scale(0.96);
-        }
-
-        .category-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .category-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-        }
-
-        .category-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.375rem;
-        }
-
-        .category-card.urgent .category-icon {
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(238, 90, 111, 0.15) 100%);
-        }
-
-        .category-card.todo .category-icon {
-            background: linear-gradient(135deg, rgba(255, 217, 61, 0.15) 0%, rgba(255, 179, 71, 0.15) 100%);
-        }
-
-        .category-card.done .category-icon {
-            background: linear-gradient(135deg, rgba(107, 207, 127, 0.15) 0%, rgba(78, 204, 163, 0.15) 100%);
-        }
-
-        .category-card.other .category-icon {
-            background: linear-gradient(135deg, rgba(162, 155, 254, 0.15) 0%, rgba(108, 92, 231, 0.15) 100%);
-        }
-
-        .category-count {
-            font-size: 2.5rem;
-            font-weight: 800;
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1;
-        }
-
-        .category-card.urgent .category-count {
-            background: var(--gradient-urgent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .category-card.todo .category-count {
-            background: var(--gradient-todo);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .category-card.done .category-count {
-            background: var(--gradient-done);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .category-card.other .category-count {
-            background: var(--gradient-other);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .category-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Add Job Button */
         .add-job-button {
             position: fixed;
             bottom: 2rem;
@@ -385,171 +209,73 @@
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, var(--primary), #764ba2);
             border: none;
             color: white;
             font-size: 1.75rem;
             cursor: pointer;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+            transition: all 0.3s;
             z-index: 999;
         }
+        .add-job-button:hover { transform: rotate(90deg) scale(0.95); }
+        .add-job-button:active { transform: rotate(90deg) scale(0.9); }
 
-        .add-job-button:hover {
-            transform: rotate(90deg) scale(0.95);
-            box-shadow: var(--shadow-md);
-        }
-
-        .add-job-button:active {
-            transform: rotate(90deg) scale(0.9);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Floor List */
-        .floor-list {
-            padding: 2rem 1.5rem;
-        }
-
-        .floor-section {
-            margin-bottom: 1.5rem;
-        }
-
+        /* Lists */
+        .floor-list, .urgent-list { padding: 2rem 1.5rem; }
+        .floor-section { margin-bottom: 1.5rem; }
+        
         .floor-header {
             background: white;
             padding: 1.25rem 1.5rem;
             border-radius: 16px;
             margin-bottom: 1rem;
-            border: 2px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            outline: none;
         }
+        .floor-header:hover { border-color: var(--primary); transform: scale(0.98); }
+        .floor-header:active { transform: scale(0.96); }
+        .floor-title { font-size: 1.125rem; font-weight: 700; display: flex; align-items: center; gap: 0.625rem; }
+        .floor-count { font-size: 0.875rem; color: var(--text-light); font-weight: 600; margin-left: auto; }
 
-        .floor-header:hover {
-            border-color: #667eea;
-            box-shadow: var(--shadow-sm);
-            transform: scale(0.98);
-        }
+        .room-list, .urgent-jobs, .job-list { display: grid; gap: 0.875rem; }
+        .room-list { padding-left: 1rem; }
 
-        .floor-header:active {
-            transform: scale(0.96);
-        }
-
-        .floor-title {
-            font-size: 1.125rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-        }
-
-        .floor-count {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            margin-left: auto;
-        }
-
-        .room-list {
-            display: grid;
-            gap: 0.875rem;
-            padding-left: 1rem;
-        }
-
-        .room-card {
+        .room-card, .job-card, .urgent-job-card {
             background: white;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--border);
             border-radius: 16px;
             padding: 1.25rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            outline: none;
         }
-
-        .room-card:hover {
-            background: #fafbff;
+        .room-card:hover, .job-card:hover, .urgent-job-card:hover { 
+            background: var(--bg);
             transform: scale(0.98);
-            border-color: #667eea;
-            box-shadow: var(--shadow-sm);
+            border-color: var(--primary);
         }
+        .room-card:active, .job-card:active, .urgent-job-card:active { transform: scale(0.96); }
 
-        .room-card:active {
-            transform: scale(0.96);
-        }
+        .urgent-job-card { border-left: 6px solid; padding: 1.5rem; }
 
-        .room-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .room-number {
-            font-size: 1.125rem;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
+        .room-header, .job-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .room-number, .job-title { font-weight: 700; }
+        .room-number { font-size: 1.125rem; font-family: 'JetBrains Mono', monospace; color: var(--primary); }
+        .job-title { font-size: 1rem; flex: 1; }
+        .room-notes { font-size: 0.875rem; color: var(--text-light); }
+        
         .job-count-badge {
             padding: 0.375rem 0.75rem;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 700;
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, var(--primary), #764ba2);
             color: white;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .room-notes {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Job List */
-        .job-list {
-            display: grid;
-            gap: 0.875rem;
-            margin-top: 0.75rem;
-        }
-
-        .job-card {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.25rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .job-card:hover {
-            background: #fafbff;
-            transform: scale(0.98);
-            border-color: #667eea;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .job-card:active {
-            transform: scale(0.96);
-        }
-
-        .job-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.625rem;
-        }
-
-        .job-title {
-            font-size: 1rem;
-            font-weight: 700;
-            flex: 1;
-            line-height: 1.4;
         }
 
         .status-badge {
@@ -558,322 +284,139 @@
             font-size: 0.6875rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
             margin-left: 0.75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-badge.urgent {
-            background: var(--gradient-urgent);
             color: white;
         }
+        .status-badge.urgent { background: var(--urgent); }
+        .status-badge.todo { background: var(--todo); color: var(--text); }
+        .status-badge.done { background: var(--done); }
+        .status-badge.other { background: var(--other); }
 
-        .status-badge.todo {
-            background: var(--gradient-todo);
-            color: var(--text-primary);
-        }
-
-        .status-badge.done {
-            background: var(--gradient-done);
-            color: white;
-        }
-
-        .status-badge.other {
-            background: var(--gradient-other);
-            color: white;
-        }
-
-        .job-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-
-        .job-photo-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
+        .job-meta { display: flex; gap: 1rem; font-size: 0.8125rem; color: var(--text-light); margin-top: 0.5rem; }
+        .job-photo-indicator { display: flex; align-items: center; gap: 0.25rem; }
 
         /* Job Detail */
-        .job-detail {
-            padding: 2rem 1.5rem;
-        }
-
+        .job-detail { padding: 2rem 1.5rem; }
         .detail-card {
             background: white;
-            border: none;
             border-radius: 24px;
             padding: 2rem;
             margin-bottom: 1.25rem;
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
-
-        .detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.25rem;
-        }
-
-        .detail-title {
-            font-size: 1.625rem;
-            font-weight: 700;
-            flex: 1;
-            line-height: 1.3;
-        }
-
-        .detail-room {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 1.25rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .detail-description {
-            font-size: 1rem;
-            line-height: 1.7;
-            color: var(--text-secondary);
-            margin-bottom: 1.75rem;
-        }
-
+        .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+        .detail-title { font-size: 1.625rem; font-weight: 700; flex: 1; }
+        .detail-room { font-size: 1.125rem; font-weight: 600; color: var(--text-light); margin-bottom: 1.25rem; font-family: 'JetBrains Mono', monospace; }
+        .detail-description { font-size: 1rem; line-height: 1.7; color: var(--text-light); margin-bottom: 1.75rem; }
         .detail-photo {
             width: 100%;
             border-radius: 16px;
             margin-bottom: 1.25rem;
             cursor: zoom-in;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
+        .detail-photo:hover { transform: scale(1.02); }
 
-        .detail-photo:hover {
-            transform: scale(1.02);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .photo-upload-section {
-            margin-top: 1.25rem;
-        }
-
-        .photo-upload-label {
-            display: block;
-            margin-bottom: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .photo-upload-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.875rem;
-        }
-
+        .photo-upload-section { margin-top: 1.25rem; }
+        .photo-upload-label { display: block; margin-bottom: 0.75rem; font-size: 0.875rem; font-weight: 700; }
+        .photo-upload-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
         .photo-upload-btn {
             padding: 1rem;
             background: white;
-            border: 2px dashed var(--border-color);
+            border: 2px dashed var(--border);
             border-radius: 12px;
-            color: var(--text-primary);
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             font-family: inherit;
         }
-
-        .photo-upload-btn:hover {
-            background: #fafbff;
-            border-color: #667eea;
-            border-style: solid;
-            transform: scale(0.98);
-        }
-
-        .photo-upload-btn:active {
-            transform: scale(0.96);
-        }
+        .photo-upload-btn:hover { background: var(--bg); border-color: var(--primary); border-style: solid; transform: scale(0.98); }
+        .photo-upload-btn:active { transform: scale(0.96); }
 
         .detail-meta {
             display: grid;
             gap: 0.5rem;
             padding-top: 1.25rem;
-            border-top: 2px solid var(--border-color);
+            border-top: 2px solid var(--border);
             font-size: 0.8125rem;
-            color: var(--text-secondary);
+            color: var(--text-light);
         }
 
-        .detail-actions {
-            display: grid;
-            gap: 0.875rem;
-            margin-top: 1.25rem;
-        }
-
-        .action-btn {
+        .detail-actions { display: grid; gap: 0.875rem; margin-top: 1.25rem; }
+        .action-btn, .edit-button {
             padding: 1.125rem;
             border-radius: 16px;
-            border: none;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             font-family: inherit;
-            box-shadow: var(--shadow-sm);
+            border: none;
         }
+        .action-btn.primary { background: var(--done); color: white; }
+        .action-btn.secondary { background: var(--todo); color: var(--text); }
+        .action-btn.danger { background: var(--urgent); color: white; }
+        .edit-button { border: 2px solid var(--border); background: white; color: var(--text); }
+        
+        .action-btn:hover, .edit-button:hover { transform: scale(0.98); }
+        .action-btn:active, .edit-button:active { transform: scale(0.96); }
 
-        .action-btn.primary {
-            background: var(--gradient-done);
-            color: white;
-        }
-
-        .action-btn.secondary {
-            background: var(--gradient-todo);
-            color: var(--text-primary);
-        }
-
-        .action-btn.danger {
-            background: var(--gradient-urgent);
-            color: white;
-        }
-
-        .action-btn:hover {
-            transform: scale(0.98);
-            box-shadow: var(--shadow-md);
-        }
-
-        .action-btn:active {
-            transform: scale(0.96);
-        }
-
-        /* Form */
-        .form-container {
-            padding: 2rem 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.75rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.625rem;
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
+        /* Forms */
+        .form-container { padding: 2rem 1.5rem; }
+        .form-group { margin-bottom: 1.75rem; }
+        .form-label { display: block; margin-bottom: 0.625rem; font-size: 0.875rem; font-weight: 700; }
+        
+        .form-input, .form-select, .form-textarea {
             width: 100%;
             padding: 1rem 1.25rem;
             background: white;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--border);
             border-radius: 12px;
-            color: var(--text-primary);
             font-size: 1rem;
             font-family: inherit;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
         }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
         }
+        .form-textarea { resize: vertical; min-height: 120px; }
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 120px;
+        .room-input-helper {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(102,126,234,0.05);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            color: var(--text-light);
         }
+        .room-input-helper strong { color: var(--primary); font-weight: 700; }
 
         .form-submit {
             width: 100%;
             padding: 1.25rem;
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, var(--primary), #764ba2);
             border: none;
             border-radius: 16px;
             color: white;
             font-size: 1.125rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             font-family: inherit;
-            box-shadow: var(--shadow-md);
         }
-
-        .form-submit:hover {
-            transform: scale(0.98);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .form-submit:active {
-            transform: scale(0.96);
-        }
+        .form-submit:hover { transform: scale(0.98); }
+        .form-submit:active { transform: scale(0.96); }
 
         /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 1.5rem;
-        }
-
-        .empty-icon {
-            font-size: 5rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.4;
-        }
-
-        .empty-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .empty-message {
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-        }
-
-        /* Urgent Jobs List */
-        .urgent-list {
-            padding: 2rem 1.5rem;
-        }
-
-        .urgent-jobs {
-            display: grid;
-            gap: 1.25rem;
-        }
-
-        .urgent-job-card {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-left: 6px solid;
-            border-radius: 16px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--shadow-md);
-        }
-
-        .urgent-job-card:hover {
-            transform: scale(0.98);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .urgent-job-card:active {
-            transform: scale(0.96);
-        }
-
-        /* Hidden file input */
-        .hidden-file-input {
-            display: none;
-        }
+        .empty-state { text-align: center; padding: 4rem 1.5rem; }
+        .empty-icon { font-size: 5rem; margin-bottom: 1.5rem; opacity: 0.4; }
+        .empty-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .empty-message { color: var(--text-light); font-size: 1.05rem; }
 
         /* Photo Modal */
         .photo-modal {
@@ -882,35 +425,20 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0,0,0,0.95);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1rem;
             cursor: zoom-out;
-            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .photo-modal img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-        }
-
+        .photo-modal img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
         .photo-modal-close {
             position: absolute;
             top: 1.5rem;
             right: 1.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.2);
             border: none;
             border-radius: 50%;
             width: 48px;
@@ -918,225 +446,23 @@
             color: white;
             font-size: 1.75rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+        }
+        .photo-modal-close:hover { background: rgba(255,255,255,0.3); transform: scale(1.1) rotate(90deg); }
+
+        .hidden-file-input { display: none; }
+        .fade-in { animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .photo-modal-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        /* Edit button */
-        .edit-button {
-            padding: 1.125rem;
-            border-radius: 16px;
-            border: 2px solid var(--border-color);
-            background: white;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: inherit;
-            color: var(--text-primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .edit-button:hover {
-            border-color: #667eea;
-            transform: scale(0.98);
-            box-shadow: var(--shadow-md);
-            background: #fafbff;
-        }
-
-        .edit-button:active {
-            transform: scale(0.96);
-        }
-
-        /* Room input helper text */
-        .room-input-helper {
-            margin-top: 0.5rem;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            border-left: 3px solid #667eea;
-            border-radius: 8px;
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .room-input-helper strong {
-            color: #667eea;
-            font-weight: 700;
-        }
-
-        /* Animations */
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Responsive */
         @media (min-width: 480px) {
-            .app-container {
-                border-left: 1px solid var(--border-color);
-                border-right: 1px solid var(--border-color);
-                box-shadow: var(--shadow-lg);
-            }
-        }
-
-        /* Loading spinner */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(102, 126, 234, 0.3);
-            border-radius: 50%;
-            border-top-color: #667eea;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* User Menu Dropdown */
-        .user-menu-container {
-            position: relative;
-        }
-
-        .user-menu-button {
-            padding: 0.5rem 0.875rem;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .user-menu-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.98);
-        }
-
-        .user-menu-button:active {
-            transform: scale(0.96);
-        }
-
-        .user-menu-dropdown {
-            position: absolute;
-            top: calc(100% + 0.5rem);
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-            min-width: 200px;
-            overflow: hidden;
-            z-index: 1000;
-            animation: slideDown 0.2s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .user-menu-item {
-            padding: 0.875rem 1.25rem;
-            color: var(--text-primary);
-            background: white;
-            border: none;
-            width: 100%;
-            text-align: left;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .user-menu-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-menu-item:hover {
-            background: #fafbff;
-            color: #667eea;
-        }
-
-        .user-menu-item:active {
-            transform: scale(0.98);
-        }
-
-        .user-menu-item.danger {
-            color: var(--accent-urgent);
-        }
-
-        .user-menu-item.danger:hover {
-            background: rgba(255, 107, 107, 0.05);
-        }
-
-        /* App branding */
-        .app-branding {
-            text-align: center;
-            padding: 3rem 1.5rem 2rem;
-        }
-
-        .app-logo {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .app-name {
-            font-size: 2.25rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .app-tagline {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            margin-bottom: 2.5rem;
+            .app-container { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
         }
     </style>
+
 </head>
 <body>
     <div id="root"></div>
@@ -1463,6 +789,9 @@
             };
 
             const getJobsForCategory = (status) => {
+                if (status === 'To Do') {
+                    return jobs.filter(job => job.status === 'To Do' || job.status === 'Urgent');
+                }
                 return jobs.filter(job => job.status === status);
             };
 
@@ -1537,6 +866,7 @@
                             rooms={rooms}
                             onBack={() => setCurrentView('floor-list')}
                             onViewRoom={viewRoomJobs}
+                            goToDashboard={goToDashboard}
                         />
                     )}
 
@@ -1547,6 +877,7 @@
                             jobs={jobs}
                             onBack={() => setCurrentView('room-list')}
                             onViewJob={viewJobDetail}
+                            goToDashboard={goToDashboard}
                         />
                     )}
 
@@ -1568,6 +899,7 @@
                             onDeleteJob={deleteJob}
                             onEditJob={editJob}
                             onEnlargePhoto={setEnlargedPhoto}
+                            goToDashboard={goToDashboard}
                         />
                     )}
 
@@ -1576,6 +908,7 @@
                             rooms={rooms}
                             onBack={goToDashboard}
                             onSubmit={createJob}
+                            goToDashboard={goToDashboard}
                         />
                     )}
 
@@ -1585,6 +918,7 @@
                             rooms={rooms}
                             onBack={() => setCurrentView('job-detail')}
                             onSubmit={updateJobData}
+                            goToDashboard={goToDashboard}
                         />
                     )}
                 </div>
@@ -1617,7 +951,7 @@
 
         function Dashboard({ role, jobs, onViewCategory, onAddJob, onLogout, onChangeCode, showUserMenu, setShowUserMenu }) {
             const urgentCount = jobs.filter(j => j.status === 'Urgent').length;
-            const todoCount = jobs.filter(j => j.status === 'To Do').length;
+            const todoCount = jobs.filter(j => j.status === 'To Do' || j.status === 'Urgent').length;
             const doneCount = jobs.filter(j => j.status === 'Done').length;
             const otherCount = jobs.filter(j => j.status === 'Other').length;
 
@@ -1625,7 +959,7 @@
                 <>
                     <div className="app-header">
                         <div className="header-content">
-                            <h1 className="app-title">HotelKeep</h1>
+                            <h1 className="app-title" onClick={() => setShowUserMenu(false)}>HotelKeep</h1>
                             <div className="header-right">
                                 <span className={`role-badge ${role}`}>
                                     {role === 'manager' ? '👨‍💼 Manager' : '🔧 Handyman'}
@@ -1731,7 +1065,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
-                        <h1 className="app-title">Urgent Jobs</h1>
+                        <h1 className="app-title" onClick={onBack}>HotelKeep</h1>
                     </div>
 
                     <div className="urgent-list fade-in">
@@ -1771,7 +1105,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
-                        <h1 className="app-title">Other Jobs</h1>
+                        <h1 className="app-title" onClick={onBack}>HotelKeep</h1>
                     </div>
 
                     <div className="urgent-list fade-in">
@@ -1809,6 +1143,9 @@
             const getFloorJobCount = (floor) => {
                 const floorRooms = rooms.filter(r => r.floor === floor);
                 const roomIds = floorRooms.map(r => r.id);
+                if (category === 'To Do') {
+                    return jobs.filter(j => (j.status === 'To Do' || j.status === 'Urgent') && roomIds.includes(j.room_id)).length;
+                }
                 return jobs.filter(j => j.status === category && roomIds.includes(j.room_id)).length;
             };
 
@@ -1818,7 +1155,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
-                        <h1 className="app-title">{category} Jobs by Floor</h1>
+                        <h1 className="app-title" onClick={onBack}>HotelKeep</h1>
                     </div>
 
                     <div className="floor-list fade-in">
@@ -1840,10 +1177,13 @@
             );
         }
 
-        function RoomList({ floor, category, jobs, rooms, onBack, onViewRoom }) {
+        function RoomList({ floor, category, jobs, rooms, onBack, onViewRoom, goToDashboard }) {
             const floorRooms = rooms.filter(r => r.floor === floor);
             
             const getRoomJobCount = (roomId) => {
+                if (category === 'To Do') {
+                    return jobs.filter(j => (j.status === 'To Do' || j.status === 'Urgent') && j.room_id === roomId).length;
+                }
                 return jobs.filter(j => j.status === category && j.room_id === roomId).length;
             };
 
@@ -1853,7 +1193,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
-                        <h1 className="app-title">{floor}</h1>
+                        <h1 className="app-title" onClick={goToDashboard}>HotelKeep</h1>
                     </div>
 
                     <div className="floor-list fade-in">
@@ -1878,8 +1218,10 @@
             );
         }
 
-        function JobList({ room, category, jobs, onBack, onViewJob }) {
-            const roomJobs = jobs.filter(j => j.room_id === room.id && j.status === category);
+        function JobList({ room, category, jobs, onBack, onViewJob, goToDashboard }) {
+            const roomJobs = category === 'To Do' 
+                ? jobs.filter(j => j.room_id === room.id && (j.status === 'To Do' || j.status === 'Urgent'))
+                : jobs.filter(j => j.room_id === room.id && j.status === category);
 
             return (
                 <>
@@ -1887,7 +1229,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
-                        <h1 className="app-title">Room {room.room_number}</h1>
+                        <h1 className="app-title" onClick={goToDashboard}>HotelKeep</h1>
                     </div>
 
                     <div className="floor-list fade-in">
@@ -1921,7 +1263,7 @@
             );
         }
 
-        function JobDetail({ job, room, role, onBack, onUpdateJob, onDeleteJob, onEditJob, onEnlargePhoto }) {
+        function JobDetail({ job, room, role, onBack, onUpdateJob, onDeleteJob, onEditJob, onEnlargePhoto, goToDashboard }) {
             const fileInputRef = useRef(null);
             const cameraInputRef = useRef(null);
 
@@ -1957,6 +1299,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Back
                         </button>
+                        <h1 className="app-title" onClick={goToDashboard}>HotelKeep</h1>
                     </div>
 
                     <div className="job-detail fade-in">
@@ -2050,7 +1393,7 @@
             );
         }
 
-        function AddJobForm({ rooms, onBack, onSubmit }) {
+        function AddJobForm({ rooms, onBack, onSubmit, goToDashboard }) {
             const [formData, setFormData] = useState({
                 room_id: '',
                 room_number: '',
@@ -2148,7 +1491,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Cancel
                         </button>
-                        <h1 className="app-title">Add New Job</h1>
+                        <h1 className="app-title" onClick={goToDashboard}>HotelKeep</h1>
                     </div>
 
                     <div className="form-container fade-in">
@@ -2263,7 +1606,7 @@
             );
         }
 
-        function EditJobForm({ job, rooms, onBack, onSubmit }) {
+        function EditJobForm({ job, rooms, onBack, onSubmit, goToDashboard }) {
             const currentRoom = rooms.find(r => r.id === job.room_id);
             const [formData, setFormData] = useState({
                 room_id: job.room_id || '',
@@ -2362,7 +1705,7 @@
                         <button className="back-button" onClick={onBack}>
                             ← Cancel
                         </button>
-                        <h1 className="app-title">Edit Job</h1>
+                        <h1 className="app-title" onClick={goToDashboard}>HotelKeep</h1>
                     </div>
 
                     <div className="form-container fade-in">
