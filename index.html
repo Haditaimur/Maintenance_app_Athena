@@ -607,8 +607,19 @@
             }
         };
 
+        // Simple hash function for manager code (better than plain text)
+        const hashCode = (str) => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        };
+
         // Version control for data updates
-        const APP_VERSION = '4.0'; // Update this when rooms/data structure changes
+        const APP_VERSION = '5.0'; // Update this when rooms/data structure changes
         const currentVersion = storage.get('appVersion', '1.0');
         
         // Reset rooms if version changed
@@ -629,7 +640,7 @@
             const [selectedRoom, setSelectedRoom] = useState(null);
             const [isEditing, setIsEditing] = useState(false);
             const [enlargedPhoto, setEnlargedPhoto] = useState(null);
-            const [managerCode, setManagerCode] = useState(() => storage.get('managerCode', '1234'));
+            const [managerCode, setManagerCode] = useState(() => storage.get('managerCodeHash', hashCode('1234')));
             const [showCodeSettings, setShowCodeSettings] = useState(false);
             const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -642,13 +653,13 @@
             }, [jobs]);
 
             useEffect(() => {
-                storage.set('managerCode', managerCode);
+                storage.set('managerCodeHash', managerCode);
             }, [managerCode]);
 
             const selectRole = (role) => {
                 if (role === 'manager') {
                     const enteredCode = prompt('Enter manager security code:');
-                    if (enteredCode === managerCode) {
+                    if (enteredCode && hashCode(enteredCode) === managerCode) {
                         setUserRole(role);
                         setCurrentView('dashboard');
                     } else if (enteredCode !== null) {
@@ -662,12 +673,12 @@
 
             const changeManagerCode = () => {
                 const currentCode = prompt('Enter current security code:');
-                if (currentCode === managerCode) {
+                if (currentCode && hashCode(currentCode) === managerCode) {
                     const newCode = prompt('Enter new security code (4-8 digits recommended):');
                     if (newCode && newCode.length >= 4) {
                         const confirmCode = prompt('Confirm new security code:');
                         if (confirmCode === newCode) {
-                            setManagerCode(newCode);
+                            setManagerCode(hashCode(newCode));
                             alert('Security code updated successfully!');
                         } else {
                             alert('Codes do not match. Security code not changed.');
@@ -735,9 +746,20 @@
             };
 
             const createJob = (jobData) => {
+                // Validate job data
+                if (!jobData.title || !jobData.description) {
+                    alert('Job must have a title and description');
+                    return;
+                }
+                
+                if (jobData.status !== 'Other' && !jobData.room_id) {
+                    alert('Room-based jobs must have a valid room');
+                    return;
+                }
+
                 const newJob = {
                     ...jobData,
-                    id: Math.max(0, ...jobs.map(j => j.id)) + 1,
+                    id: jobs.length > 0 ? Math.max(...jobs.map(j => j.id)) + 1 : 1,
                     original_status: jobData.status,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -747,6 +769,17 @@
             };
 
             const updateJobData = (jobId, updates) => {
+                // Validate updates
+                if (updates.title !== undefined && !updates.title.trim()) {
+                    alert('Job title cannot be empty');
+                    return;
+                }
+                
+                if (updates.description !== undefined && !updates.description.trim()) {
+                    alert('Job description cannot be empty');
+                    return;
+                }
+
                 setJobs(jobs.map(job => 
                     job.id === jobId 
                         ? { ...job, ...updates, updated_at: new Date().toISOString() }
@@ -803,7 +836,8 @@
             };
 
             const getRoomById = (roomId) => {
-                return rooms.find(r => r.id === roomId);
+                if (!roomId) return null;
+                return rooms.find(r => r.id === roomId) || null;
             };
 
             return (
@@ -1035,17 +1069,6 @@
                                 </div>
                                 <div className="category-count">{doneCount}</div>
                                 <div className="category-subtitle">Completed tasks</div>
-                            </div>
-
-                            <div className="category-card other" onClick={() => onViewCategory('Other')}>
-                                <div className="category-header">
-                                    <div className="category-title">
-                                        <div className="category-icon">🔧</div>
-                                        Other Jobs
-                                    </div>
-                                </div>
-                                <div className="category-count">{otherCount}</div>
-                                <div className="category-subtitle">Non-room maintenance tasks</div>
                             </div>
 
                             <div className="category-card other" onClick={() => onViewCategory('Other')}>
