@@ -619,7 +619,7 @@
         };
 
         // Version control for data updates
-        const APP_VERSION = '5.0'; // Update this when rooms/data structure changes
+        const APP_VERSION = '6.0'; // Update this when rooms/data structure changes
         const currentVersion = storage.get('appVersion', '1.0');
         
         // Reset rooms if version changed
@@ -713,8 +713,6 @@
                 setSelectedCategory(category);
                 if (category === 'Urgent') {
                     setCurrentView('urgent-list');
-                } else if (category === 'Other') {
-                    setCurrentView('other-list');
                 } else {
                     setCurrentView('floor-list');
                 }
@@ -823,7 +821,7 @@
 
             const getJobsForCategory = (status) => {
                 if (status === 'To Do') {
-                    return jobs.filter(job => job.status === 'To Do' || job.status === 'Urgent');
+                    return jobs.filter(job => job.status === 'To Do' || job.status === 'Urgent' || job.status === 'Other');
                 }
                 return jobs.filter(job => job.status === status);
             };
@@ -874,14 +872,6 @@
                         />
                     )}
 
-                    {currentView === 'other-list' && (
-                        <OtherJobsList
-                            jobs={getJobsWithRoomInfo(getJobsForCategory('Other'))}
-                            onBack={goToDashboard}
-                            onViewJob={viewJobDetail}
-                        />
-                    )}
-
                     {currentView === 'floor-list' && (
                         <FloorList
                             category={selectedCategory}
@@ -924,8 +914,6 @@
                             onBack={() => {
                                 if (selectedCategory === 'Urgent') {
                                     setCurrentView('urgent-list');
-                                } else if (selectedCategory === 'Other') {
-                                    setCurrentView('other-list');
                                 } else {
                                     setCurrentView('job-list');
                                 }
@@ -986,9 +974,8 @@
 
         function Dashboard({ role, jobs, onViewCategory, onAddJob, onLogout, onChangeCode, showUserMenu, setShowUserMenu }) {
             const urgentCount = jobs.filter(j => j.status === 'Urgent').length;
-            const todoCount = jobs.filter(j => j.status === 'To Do' || j.status === 'Urgent').length;
+            const todoCount = jobs.filter(j => j.status === 'To Do' || j.status === 'Urgent' || j.status === 'Other').length;
             const doneCount = jobs.filter(j => j.status === 'Done').length;
-            const otherCount = jobs.filter(j => j.status === 'Other').length;
 
             return (
                 <>
@@ -1070,17 +1057,6 @@
                                 <div className="category-count">{doneCount}</div>
                                 <div className="category-subtitle">Completed tasks</div>
                             </div>
-
-                            <div className="category-card other" onClick={() => onViewCategory('Other')}>
-                                <div className="category-header">
-                                    <div className="category-title">
-                                        <div className="category-icon">🔧</div>
-                                        Other Jobs
-                                    </div>
-                                </div>
-                                <div className="category-count">{otherCount}</div>
-                                <div className="category-subtitle">Non-room maintenance tasks</div>
-                            </div>
                         </div>
                     </div>
 
@@ -1133,44 +1109,6 @@
             );
         }
 
-        function OtherJobsList({ jobs, onBack, onViewJob }) {
-            return (
-                <>
-                    <div className="app-header">
-                        <button className="back-button" onClick={onBack}>
-                            ← Back
-                        </button>
-                        <h1 className="app-title" onClick={onBack}>HotelKeep</h1>
-                    </div>
-
-                    <div className="urgent-list fade-in">
-                        {jobs.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-icon">📭</div>
-                                <div className="empty-title">No Other Jobs</div>
-                                <div className="empty-message">No non-room maintenance tasks at the moment</div>
-                            </div>
-                        ) : (
-                            <div className="urgent-jobs">
-                                {jobs.map(job => (
-                                    <div key={job.id} className="urgent-job-card" onClick={() => onViewJob(job)} style={{ borderLeftColor: 'var(--accent-other)' }}>
-                                        <div className="job-header">
-                                            <div className="job-title">{job.title}</div>
-                                            <span className="status-badge other">Other</span>
-                                        </div>
-                                        <div className="detail-description">{job.description}</div>
-                                        <div className="job-meta">
-                                            <span>📅 {new Date(job.created_at).toLocaleDateString()}</span>
-                                            {job.photo && <span className="job-photo-indicator">📷 Photo</span>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </>
-            );
-        }
 
         function FloorList({ category, jobs, rooms, onBack, onViewFloor }) {
             const floors = ['Basement', 'Ground Floor', 'First Floor', 'Second Floor', 'Third Floor', 'Fourth Floor'];
@@ -1185,7 +1123,12 @@
             };
 
             const getOtherJobsCount = () => {
-                return jobs.filter(j => j.status === 'Done' && j.original_status === 'Other').length;
+                if (category === 'To Do') {
+                    return jobs.filter(j => j.status === 'Other').length;
+                } else if (category === 'Done') {
+                    return jobs.filter(j => j.status === 'Done' && j.original_status === 'Other').length;
+                }
+                return 0;
             };
 
             return (
@@ -1198,7 +1141,7 @@
                     </div>
 
                     <div className="floor-list fade-in">
-                        {category === 'Done' && getOtherJobsCount() > 0 && (
+                        {getOtherJobsCount() > 0 && (
                             <div className="floor-section" onClick={() => onViewFloor('Other')}>
                                 <div className="floor-header" style={{ cursor: 'pointer' }}>
                                     <div className="floor-title">
@@ -1230,7 +1173,14 @@
         function RoomList({ floor, category, jobs, rooms, onBack, onViewRoom, onViewJob, goToDashboard }) {
             // Special handling for "Other" jobs
             if (floor === 'Other') {
-                const otherJobs = jobs.filter(j => j.status === 'Done' && j.original_status === 'Other');
+                let otherJobs;
+                if (category === 'To Do') {
+                    otherJobs = jobs.filter(j => j.status === 'Other');
+                } else if (category === 'Done') {
+                    otherJobs = jobs.filter(j => j.status === 'Done' && j.original_status === 'Other');
+                } else {
+                    otherJobs = [];
+                }
                 
                 return (
                     <>
@@ -1245,16 +1195,16 @@
                             {otherJobs.length === 0 ? (
                                 <div className="empty-state">
                                     <div className="empty-icon">📭</div>
-                                    <div className="empty-title">No Completed Other Jobs</div>
-                                    <div className="empty-message">No completed non-room maintenance tasks</div>
+                                    <div className="empty-title">No Other Jobs</div>
+                                    <div className="empty-message">No {category === 'Done' ? 'completed' : 'pending'} non-room maintenance tasks</div>
                                 </div>
                             ) : (
                                 <div className="urgent-jobs">
                                     {otherJobs.map(job => (
-                                        <div key={job.id} className="urgent-job-card" onClick={() => onViewJob(job)} style={{ borderLeftColor: 'var(--done)' }}>
+                                        <div key={job.id} className="urgent-job-card" onClick={() => onViewJob(job)} style={{ borderLeftColor: job.status === 'Done' ? 'var(--done)' : 'var(--other)' }}>
                                             <div className="job-header">
                                                 <div className="job-title">{job.title}</div>
-                                                <span className="status-badge done">Done</span>
+                                                <span className={`status-badge ${job.status.toLowerCase().replace(' ', '')}`}>{job.status}</span>
                                             </div>
                                             <div className="detail-description">{job.description}</div>
                                             <div className="job-meta">
@@ -1499,7 +1449,9 @@
                 room_number: '',
                 title: '',
                 description: '',
-                status: 'To Do',
+                jobType: 'room', // 'room' or 'other'
+                priority: 'To Do', // 'Urgent' or 'To Do'
+                status: 'To Do', // Will be calculated from jobType and priority
                 photo: null
             });
             const fileInputRef = useRef(null);
@@ -1553,8 +1505,8 @@
                     return;
                 }
                 
-                // For "Other" jobs, room_id is optional
-                if (formData.status !== 'Other') {
+                // For room jobs, validate room
+                if (formData.jobType === 'room') {
                     if (!formData.room_number) {
                         alert('Please enter a room number');
                         return;
@@ -1571,7 +1523,13 @@
                     formData.room_id = matchingRoom.id;
                 }
                 
-                onSubmit(formData);
+                // Calculate status from jobType and priority
+                const finalStatus = formData.jobType === 'other' ? 'Other' : formData.priority;
+                
+                onSubmit({
+                    ...formData,
+                    status: finalStatus
+                });
             };
 
             const handleFileUpload = (e) => {
@@ -1597,43 +1555,72 @@
                     <div className="form-container fade-in">
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label className="form-label">Priority *</label>
+                                <label className="form-label">Job Type *</label>
                                 <select 
                                     className="form-select"
-                                    value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    value={formData.jobType}
+                                    onChange={(e) => setFormData({ ...formData, jobType: e.target.value })}
                                     required
                                 >
-                                    <option value="To Do">To Do</option>
-                                    <option value="Urgent">Urgent</option>
-                                    <option value="Other">Other (Non-room task)</option>
+                                    <option value="room">Room-based Job</option>
+                                    <option value="other">Other (Non-room task)</option>
                                 </select>
                             </div>
 
-                            {formData.status !== 'Other' && (
+                            {formData.jobType === 'other' && (
                                 <div className="form-group">
-                                    <label className="form-label">Room Number *</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={formData.room_number}
-                                        onChange={(e) => handleRoomNumberChange(e.target.value)}
-                                        placeholder="e.g., 1, 2b, 21, 51"
+                                    <label className="form-label">Priority *</label>
+                                    <select 
+                                        className="form-select"
+                                        value={formData.priority}
+                                        onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                                         required
-                                    />
-                                    <div className="room-input-helper">
-                                        {detectedFloor ? (
-                                            <span>✓ <strong>{detectedFloor}</strong> - Room {formData.room_number}</span>
-                                        ) : formData.room_number ? (
-                                            <span>⚠️ Room not found. Please check the room number.</span>
-                                        ) : (
-                                            <span>
-                                                <strong>Available rooms:</strong> Basement (51-54), Ground (1-7), 
-                                                First (8, 2b, 11-16), Second (9, 5b, 21-26), Third (31-36), Fourth (41-46)
-                                            </span>
-                                        )}
-                                    </div>
+                                    >
+                                        <option value="To Do">To Do</option>
+                                        <option value="Urgent">Urgent</option>
+                                    </select>
                                 </div>
+                            )}
+
+                            {formData.jobType === 'room' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Priority *</label>
+                                        <select 
+                                            className="form-select"
+                                            value={formData.priority}
+                                            onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                                            required
+                                        >
+                                            <option value="To Do">To Do</option>
+                                            <option value="Urgent">Urgent</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Room Number *</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.room_number}
+                                            onChange={(e) => handleRoomNumberChange(e.target.value)}
+                                            placeholder="e.g., 1, 2b, 21, 51"
+                                            required
+                                        />
+                                        <div className="room-input-helper">
+                                            {detectedFloor ? (
+                                                <span>✓ <strong>{detectedFloor}</strong> - Room {formData.room_number}</span>
+                                            ) : formData.room_number ? (
+                                                <span>⚠️ Room not found. Please check the room number.</span>
+                                            ) : (
+                                                <span>
+                                                    <strong>Available rooms:</strong> Basement (51-54), Ground (1-7), 
+                                                    First (8, 2b, 11-16), Second (9, 5b, 21-26), Third (31-36), Fourth (41-46)
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             )}
 
                             <div className="form-group">
@@ -1811,21 +1798,21 @@
                     <div className="form-container fade-in">
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label className="form-label">Priority *</label>
+                                <label className="form-label">Status *</label>
                                 <select 
                                     className="form-select"
                                     value={formData.status}
                                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     required
                                 >
-                                    <option value="To Do">To Do</option>
                                     <option value="Urgent">Urgent</option>
+                                    <option value="To Do">To Do</option>
                                     <option value="Other">Other (Non-room task)</option>
                                     <option value="Done">Done</option>
                                 </select>
                             </div>
 
-                            {formData.status !== 'Other' && (
+                            {formData.status !== 'Other' && formData.status !== 'Done' && (
                                 <div className="form-group">
                                     <label className="form-label">Room Number *</label>
                                     <input
