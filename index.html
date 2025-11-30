@@ -704,6 +704,8 @@
                     setCurrentView('urgent-list');
                 } else if (category === 'Other') {
                     setCurrentView('other-list');
+                } else if (category === 'Done Other') {
+                    setCurrentView('done-other-list');
                 } else {
                     setCurrentView('floor-list');
                 }
@@ -792,6 +794,12 @@
                 if (status === 'To Do') {
                     return jobs.filter(job => job.status === 'To Do' || job.status === 'Urgent');
                 }
+                if (status === 'Done') {
+                    return jobs.filter(job => job.status === 'Done' && job.original_status !== 'Other');
+                }
+                if (status === 'Done Other') {
+                    return jobs.filter(job => job.status === 'Done' && job.original_status === 'Other');
+                }
                 return jobs.filter(job => job.status === status);
             };
 
@@ -848,6 +856,14 @@
                         />
                     )}
 
+                    {currentView === 'done-other-list' && (
+                        <DoneOtherJobsList
+                            jobs={getJobsWithRoomInfo(getJobsForCategory('Done Other'))}
+                            onBack={goToDashboard}
+                            onViewJob={viewJobDetail}
+                        />
+                    )}
+
                     {currentView === 'floor-list' && (
                         <FloorList
                             category={selectedCategory}
@@ -891,6 +907,8 @@
                                     setCurrentView('urgent-list');
                                 } else if (selectedCategory === 'Other') {
                                     setCurrentView('other-list');
+                                } else if (selectedCategory === 'Done Other') {
+                                    setCurrentView('done-other-list');
                                 } else {
                                     setCurrentView('job-list');
                                 }
@@ -952,8 +970,9 @@
         function Dashboard({ role, jobs, onViewCategory, onAddJob, onLogout, onChangeCode, showUserMenu, setShowUserMenu }) {
             const urgentCount = jobs.filter(j => j.status === 'Urgent').length;
             const todoCount = jobs.filter(j => j.status === 'To Do' || j.status === 'Urgent').length;
-            const doneCount = jobs.filter(j => j.status === 'Done').length;
+            const doneCount = jobs.filter(j => j.status === 'Done' && j.original_status !== 'Other').length;
             const otherCount = jobs.filter(j => j.status === 'Other').length;
+            const doneOtherCount = jobs.filter(j => j.status === 'Done' && j.original_status === 'Other').length;
 
             return (
                 <>
@@ -1034,6 +1053,17 @@
                                 </div>
                                 <div className="category-count">{doneCount}</div>
                                 <div className="category-subtitle">Completed tasks</div>
+                            </div>
+
+                            <div className="category-card other" onClick={() => onViewCategory('Done Other')}>
+                                <div className="category-header">
+                                    <div className="category-title">
+                                        <div className="category-icon">🔧</div>
+                                        Done Other Jobs
+                                    </div>
+                                </div>
+                                <div className="category-count">{doneOtherCount}</div>
+                                <div className="category-subtitle">Completed non-room tasks</div>
                             </div>
 
                             <div className="category-card other" onClick={() => onViewCategory('Other')}>
@@ -1137,6 +1167,45 @@
             );
         }
 
+        function DoneOtherJobsList({ jobs, onBack, onViewJob }) {
+            return (
+                <>
+                    <div className="app-header">
+                        <button className="back-button" onClick={onBack}>
+                            ← Back
+                        </button>
+                        <h1 className="app-title" onClick={onBack}>HotelKeep</h1>
+                    </div>
+
+                    <div className="urgent-list fade-in">
+                        {jobs.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📭</div>
+                                <div className="empty-title">No Completed Other Jobs</div>
+                                <div className="empty-message">No completed non-room maintenance tasks</div>
+                            </div>
+                        ) : (
+                            <div className="urgent-jobs">
+                                {jobs.map(job => (
+                                    <div key={job.id} className="urgent-job-card" onClick={() => onViewJob(job)} style={{ borderLeftColor: 'var(--done)' }}>
+                                        <div className="job-header">
+                                            <div className="job-title">{job.title}</div>
+                                            <span className="status-badge done">Done</span>
+                                        </div>
+                                        <div className="detail-description">{job.description}</div>
+                                        <div className="job-meta">
+                                            <span>📅 {new Date(job.created_at).toLocaleDateString()}</span>
+                                            {job.photo && <span className="job-photo-indicator">📷 Photo</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </>
+            );
+        }
+
         function FloorList({ category, jobs, rooms, onBack, onViewFloor }) {
             const floors = ['Basement', 'Ground Floor', 'First Floor', 'Second Floor', 'Third Floor', 'Fourth Floor'];
             
@@ -1145,6 +1214,9 @@
                 const roomIds = floorRooms.map(r => r.id);
                 if (category === 'To Do') {
                     return jobs.filter(j => (j.status === 'To Do' || j.status === 'Urgent') && roomIds.includes(j.room_id)).length;
+                }
+                if (category === 'Done') {
+                    return jobs.filter(j => j.status === 'Done' && j.original_status !== 'Other' && roomIds.includes(j.room_id)).length;
                 }
                 return jobs.filter(j => j.status === category && roomIds.includes(j.room_id)).length;
             };
@@ -1184,6 +1256,9 @@
                 if (category === 'To Do') {
                     return jobs.filter(j => (j.status === 'To Do' || j.status === 'Urgent') && j.room_id === roomId).length;
                 }
+                if (category === 'Done') {
+                    return jobs.filter(j => j.status === 'Done' && j.original_status !== 'Other' && j.room_id === roomId).length;
+                }
                 return jobs.filter(j => j.status === category && j.room_id === roomId).length;
             };
 
@@ -1219,9 +1294,14 @@
         }
 
         function JobList({ room, category, jobs, onBack, onViewJob, goToDashboard }) {
-            const roomJobs = category === 'To Do' 
-                ? jobs.filter(j => j.room_id === room.id && (j.status === 'To Do' || j.status === 'Urgent'))
-                : jobs.filter(j => j.room_id === room.id && j.status === category);
+            let roomJobs;
+            if (category === 'To Do') {
+                roomJobs = jobs.filter(j => j.room_id === room.id && (j.status === 'To Do' || j.status === 'Urgent'));
+            } else if (category === 'Done') {
+                roomJobs = jobs.filter(j => j.room_id === room.id && j.status === 'Done' && j.original_status !== 'Other');
+            } else {
+                roomJobs = jobs.filter(j => j.room_id === room.id && j.status === category);
+            }
 
             return (
                 <>
