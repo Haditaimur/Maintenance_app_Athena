@@ -1093,8 +1093,8 @@
                         {jobs.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-icon">🎉</div>
-                                <div className="empty-title">No Urgent Jobs</div>
-                                <div className="empty-message">All critical issues have been addressed</div>
+                                <div className="empty-title">All Clear!</div>
+                                <div className="empty-message">No urgent jobs at the moment. Everything is under control.</div>
                             </div>
                         ) : (
                             <div className="urgent-jobs">
@@ -1141,6 +1141,10 @@
                 return 0;
             };
 
+            const getTotalJobCount = () => {
+                return getOtherJobsCount() + floors.reduce((sum, floor) => sum + getFloorJobCount(floor), 0);
+            };
+
             return (
                 <>
                     <div className="app-header">
@@ -1151,30 +1155,52 @@
                     </div>
 
                     <div className="floor-list fade-in">
-                        {getOtherJobsCount() > 0 && (
-                            <div className="floor-section" onClick={() => onViewFloor('Other')}>
-                                <div className="floor-header" style={{ cursor: 'pointer' }}>
-                                    <div className="floor-title">
-                                        🔧 Other Jobs
-                                        <span className="floor-count">({getOtherJobsCount()} {getOtherJobsCount() === 1 ? 'job' : 'jobs'})</span>
-                                    </div>
+                        {getTotalJobCount() === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">
+                                    {category === 'To Do' ? '✅' : category === 'Done' ? '🎉' : '📋'}
+                                </div>
+                                <div className="empty-title">
+                                    {category === 'To Do' ? 'No Pending Jobs' : category === 'Done' ? 'No Completed Jobs Yet' : `No ${category} Jobs`}
+                                </div>
+                                <div className="empty-message">
+                                    {category === 'To Do' 
+                                        ? 'Great! All caught up. Use the + button to add new maintenance tasks.'
+                                        : category === 'Done'
+                                        ? 'No jobs have been completed yet. Completed jobs will appear here.'
+                                        : `There are currently no ${category.toLowerCase()} jobs.`
+                                    }
                                 </div>
                             </div>
-                        )}
-                        
-                        {floors.map(floor => {
-                            const jobCount = getFloorJobCount(floor);
-                            return (
-                                <div key={floor} className="floor-section" onClick={() => onViewFloor(floor)}>
-                                    <div className="floor-header" style={{ cursor: 'pointer' }}>
-                                        <div className="floor-title">
-                                            🏢 {floor}
-                                            <span className="floor-count">({jobCount} {jobCount === 1 ? 'job' : 'jobs'})</span>
+                        ) : (
+                            <>
+                                {getOtherJobsCount() > 0 && (
+                                    <div className="floor-section" onClick={() => onViewFloor('Other')}>
+                                        <div className="floor-header" style={{ cursor: 'pointer' }}>
+                                            <div className="floor-title">
+                                                🔧 Other Jobs
+                                                <span className="floor-count">({getOtherJobsCount()} {getOtherJobsCount() === 1 ? 'job' : 'jobs'})</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                )}
+                                
+                                {floors.map(floor => {
+                                    const jobCount = getFloorJobCount(floor);
+                                    if (jobCount === 0) return null;
+                                    return (
+                                        <div key={floor} className="floor-section" onClick={() => onViewFloor(floor)}>
+                                            <div className="floor-header" style={{ cursor: 'pointer' }}>
+                                                <div className="floor-title">
+                                                    🏢 {floor}
+                                                    <span className="floor-count">({jobCount} {jobCount === 1 ? 'job' : 'jobs'})</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        )}
                     </div>
                 </>
             );
@@ -1242,6 +1268,8 @@
                 return jobs.filter(j => j.status === category && j.room_id === roomId).length;
             };
 
+            const roomsWithJobs = floorRooms.filter(room => getRoomJobCount(room.id) > 0);
+
             return (
                 <>
                     <div className="app-header">
@@ -1252,22 +1280,36 @@
                     </div>
 
                     <div className="floor-list fade-in">
-                        <div className="room-list">
-                            {floorRooms.map(room => {
-                                const jobCount = getRoomJobCount(room.id);
-                                if (jobCount === 0) return null;
-                                
-                                return (
-                                    <div key={room.id} className="room-card" onClick={() => onViewRoom(room)}>
-                                        <div className="room-header">
-                                            <div className="room-number">Room {room.room_number}</div>
-                                            <span className="job-count-badge">{jobCount} {jobCount === 1 ? 'job' : 'jobs'}</span>
+                        {roomsWithJobs.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">🏢</div>
+                                <div className="empty-title">No Jobs on {floor}</div>
+                                <div className="empty-message">
+                                    {category === 'To Do' 
+                                        ? `All rooms on ${floor} are in good condition. No pending maintenance tasks.`
+                                        : category === 'Done'
+                                        ? `No completed jobs on ${floor} yet.`
+                                        : `There are no ${category.toLowerCase()} jobs on this floor.`
+                                    }
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="room-list">
+                                {roomsWithJobs.map(room => {
+                                    const jobCount = getRoomJobCount(room.id);
+                                    
+                                    return (
+                                        <div key={room.id} className="room-card" onClick={() => onViewRoom(room)}>
+                                            <div className="room-header">
+                                                <div className="room-number">Room {room.room_number}</div>
+                                                <span className="job-count-badge">{jobCount} {jobCount === 1 ? 'job' : 'jobs'}</span>
+                                            </div>
+                                            <div className="room-notes">{room.notes}</div>
                                         </div>
-                                        <div className="room-notes">{room.notes}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </>
             );
@@ -1295,9 +1337,16 @@
                     <div className="floor-list fade-in">
                         {roomJobs.length === 0 ? (
                             <div className="empty-state">
-                                <div className="empty-icon">📭</div>
-                                <div className="empty-title">No Jobs</div>
-                                <div className="empty-message">No {category.toLowerCase()} jobs for this room</div>
+                                <div className="empty-icon">✅</div>
+                                <div className="empty-title">No Jobs for Room {room.room_number}</div>
+                                <div className="empty-message">
+                                    {category === 'To Do' 
+                                        ? 'This room has no pending maintenance tasks.'
+                                        : category === 'Done'
+                                        ? 'No completed jobs for this room yet.'
+                                        : `No ${category.toLowerCase()} jobs for this room.`
+                                    }
+                                </div>
                             </div>
                         ) : (
                             <div className="job-list">
